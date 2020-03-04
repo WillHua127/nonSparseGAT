@@ -69,7 +69,7 @@ def train(epoch, model, features, labels, idx_train, idx_val, optimizer):
     optimizer.step()
 
     model.eval()
-    output = model(features)
+    output = model(features, adj)
     loss_val = F.cross_entropy(output[idx_val], labels[idx_val])
     acc_val = accuracy(output[idx_val], labels[idx_val])
 
