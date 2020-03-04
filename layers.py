@@ -34,7 +34,7 @@ class GraphAttentionLayer(nn.Module):
         e = self.leakyrelu(torch.matmul(a_input, self.a).squeeze(2))
 
         zero_vec = -9e15*torch.ones_like(e)
-        attention = torch.where(adj > 0, e, zero_vec)
+        attention = torch.where(adj.to_dense() > 0, e, zero_vec)
         attention = F.softmax(attention, dim=1)
         attention = F.dropout(attention, self.dropout, training=self.training)
         h_prime = torch.matmul(attention, h)
