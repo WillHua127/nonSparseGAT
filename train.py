@@ -58,11 +58,11 @@ if args.cuda:
 features, adj, labels = Variable(features), Variable(adj), Variable(labels)
 
 
-def train(epoch, model, features, labels, adj, idx_train, idx_val, optimizer):
+def train(epoch, model, features, labels, idx_train, idx_val, optimizer):
     t = time.time()    
     model.train()
     optimizer.zero_grad()
-    output = model(features)
+    output = model(features, adj)
     loss_train = F.cross_entropy(output[idx_train], labels[idx_train])
     acc_train = accuracy(output[idx_train], labels[idx_train])
     loss_train.backward()
@@ -101,8 +101,7 @@ for runtime in range(args.runtimes):
                 nclass=int(labels.max()) + 1, 
                 dropout=args.dropout, 
                 nheads=args.nb_heads, 
-                alpha=args.alpha,
-                adj=adj)
+                alpha=args.alpha)
     print("MODEL_BUILT")
     optimizer = optim.Adam(model.parameters(), 
                            lr=args.lr, 
@@ -117,7 +116,7 @@ for runtime in range(args.runtimes):
     best = args.epochs + 1
     best_epoch = 0
     for epoch in range(args.epochs):
-        loss, acc = train(epoch, model, features, labels, adj, idx_train, idx_val, optimizer)
+        loss, acc = train(epoch, model, features, labels, idx_train, idx_val, optimizer)
         val_loss.append(loss)
         test_acc.append(acc)
 
