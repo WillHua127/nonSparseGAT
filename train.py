@@ -73,6 +73,7 @@ def train(epoch, model, features, labels, idx_train, idx_val, optimizer):
     acc_val = accuracy(output[idx_val], labels[idx_val])
     
     model.eval()
+    output = model(features, adj)
     loss_test = F.nll_loss(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
     
