@@ -32,7 +32,7 @@ parser.add_argument('--nb_heads', type=int, default=8, help='Number of head atte
 parser.add_argument('--dropout', type=float, default=0.6, help='Dropout rate (1 - keep probability).')
 parser.add_argument('--alpha', type=float, default=0.2, help='Alpha for the leaky_relu.')
 parser.add_argument('--patience', type=int, default=200, help='Patience')
-parser.add_argument('--runtimes', type=int, default=10, help='Runtime')
+parser.add_argument('--runtimes', type=int, default=1, help='Runtime')
 parser.add_argument('--identifier', type=int, default=1234567, help='Identifier for the job')
 
 args = parser.parse_args()
@@ -59,7 +59,7 @@ features, adj, labels = Variable(features), Variable(adj), Variable(labels)
 
 
 def train(epoch, model, features, labels, idx_train, idx_val, optimizer):
-    t = time.time()    
+    t = time.time()
     model.train()
     optimizer.zero_grad()
     output = model(features, adj)
@@ -78,11 +78,11 @@ def train(epoch, model, features, labels, idx_train, idx_val, optimizer):
     
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.4f}'.format(loss_train.data.item()),
-          'acc_train: {:.4f}'.format(acc_train),
+          'acc_train: {:.4f}'.format(acc_train.data.item()),
           'loss_val: {:.4f}'.format(loss_val.data.item()),
-          'acc_val: {:.4f}'.format(acc_val),
+          'acc_val: {:.4f}'.format(acc_val.data.item()),
           'loss_test: {:.4f}'.format(loss_test.data.item()),
-          'acc_test: {:.4f}'.format(acc_test),
+          'acc_test: {:.4f}'.format(acc_test.data.item()),
           'time: {:.4f}s'.format(time.time() - t))
     return loss_val.data.item(), acc_test.data.item()
 
@@ -137,6 +137,6 @@ for runtime in range(args.runtimes):
     # Restore best model
     best_tests.append(best_test)
     print("The best test accuracy this tuntime : ",best_test)
-    del model, optimizer
+    #del model, optimizer
 print("The average test accuracy : ", np.mean(best_tests), "The test variance : ", np.var(best_tests), "The test standard deviation : ", np.std(best_tests))
 script = open("%d.txt" % args.identifier, 'w'); script.write("%e" % np.mean(best_tests)); script.close()
