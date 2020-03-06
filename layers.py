@@ -19,9 +19,9 @@ class GraphAttentionLayer(nn.Module):
         self.concat = concat
 
         self.W = nn.Parameter(torch.zeros(size=(in_features, out_features)))
-        nn.init.xavier_uniform_(self.W.data, gain=1.414)
+        nn.init.xavier_normal_(self.W.data, gain=1.0)
         self.a = nn.Parameter(torch.zeros(size=(2*out_features, 1)))
-        nn.init.xavier_uniform_(self.a.data, gain=1.414)
+        nn.init.xavier_normal_(self.a.data, gain=1.0)
 
         self.leakyrelu = nn.LeakyReLU(self.alpha)
 
