@@ -19,18 +19,24 @@ class GraphAttentionLayer(nn.Module):
         self.concat = concat
 
         self.W = nn.Parameter(torch.zeros(size=(in_features, out_features)))
-        nn.init.xavier_normal_(self.W.data, gain=1.0)
-        self.a = nn.Parameter(torch.zeros(size=(2*out_features, 1)))
-        nn.init.xavier_normal_(self.a.data, gain=1.0)
+        nn.init.xavier_uniform_(self.W.data, gain=1.414)
+        self.a = nn.Parameter(torch.zeros(size=(4*out_features, 1)))
+        nn.init.xavier_uniform_(self.a.data, gain=1.414)
 
         self.leakyrelu = nn.LeakyReLU(self.alpha)
+        
+    def relu_bt(self, x):
+        threshold = torch.norm(x,p=float("inf")).clone().detach()
+        return - torch.threshold(-F.leaky_relu(x),-threshold,-threshold)
 
     def forward(self, input, adj):
         h = torch.mm(input, self.W)
+        h = self.relu_bt(h)
         N = h.size()[0]
-
         
-        a_input = torch.cat([h.repeat(1, N).view(N * N, -1), h.repeat(N, 1)], dim=1).view(N, -1, 2 * self.out_features)
+        agg = self.relu_bt(torch.add(h.repeat(1, N).view(N * N, -1), h.repeat(N, 1)))
+        diff = self.relu_bt(torch.sub(h.repeat(1, N).view(N * N, -1), h.repeat(N, 1)))
+        a_input = torch.cat([h.repeat(1, N).view(N * N, -1), h.repeat(N, 1), agg, diff], dim=1).view(N, -1, 4 * self.out_features)
         e = self.leakyrelu(torch.matmul(a_input, self.a).squeeze(2))
 
         zero_vec = -9e15*torch.ones_like(e)
@@ -40,7 +46,7 @@ class GraphAttentionLayer(nn.Module):
         h_prime = torch.matmul(attention, h)
 
         if self.concat:
-            return F.elu(h_prime)
+            return self.relu_bt(h_prime)
         else:
             return h_prime
 
